@@ -1,10 +1,145 @@
-# Postgraduate Recommendation Letter Skills
+# 保研自荐信工作流 Skills
 
-A two-skill Codex workflow for researching graduate advisors, reading representative papers, and adapting recommendation/self-introduction letters.
+一套面向保研、推免和联系硕士导师场景的 Codex Skills。它把“个人资料初始化”和“目标导师自荐信执行”拆成两个 Skill，帮助模型完成导师调研、代表性论文查找与精读、自荐信改写和 DOCX 交付。
 
-## Skills
+本项目的设计目标不是生成一封通用套话信，而是让自荐信建立在三类真实材料之上：
 
-- `postgrad-recommendation-letter-init`: initialize resume facts and an optional DOCX base template.
-- `postgrad-recommendation-letter-run`: research an advisor, locate and read representative paper PDFs, adapt the complete DOCX base, and deliver a checked letter.
+- 使用者的个人简历；
+- 目标导师的多源公开资料和研究路径；
+- 实际下载并读取过的代表性论文全文。
 
-The package contains only the reusable skills. Personal resumes, letters, downloaded papers, task reports, and profile state are intentionally excluded.
+## 功能
+
+### 1. 简历与底稿初始化
+
+`postgrad-recommendation-letter-init` 会：
+
+- 主动索取并读取个人简历，简历是必需材料；
+- 提取教育、成绩、推免资格、科研、竞赛、奖项和技能等个人事实；
+- 标记简历中的示例值、星号和待确认信息，避免写入错误内容；
+- 询问是否提供自荐信模板；
+- 使用用户上传的完整 DOCX 作为底稿，或使用内置通用模板；
+- 支持将用户修改后确认满意的 DOCX 更新为下一轮底稿。
+
+### 2. 目标导师调研与自荐信执行
+
+`postgrad-recommendation-letter-run` 会：
+
+- 调研目标导师的身份、单位、职称、研究方向和研究路径；
+- 将用户提供的主页作为定位线索，同时继续进行多源调研；
+- 先理解导师研究主线，再选择通常两篇具有代表性的论文；
+- 自主搜索、追踪、下载并验证论文全文；
+- 实际读取本地 PDF 后完成论文精读；
+- 将论文问题、方法和研究价值与个人经历进行真实、克制的联系；
+- 在完整 DOCX 底稿上改写，而不是只替换几个占位符；
+- 输出研究报告、自荐信正文、目标导师 DOCX 和基础 QA 结果。
+
+## 优势
+
+### 双 Skill 分工
+
+初始化资料和执行具体导师任务彼此分离。简历、模板和个人事实可以复用，不需要每次重新描述；不同学校和导师的调研结果则保存在各自任务目录中，不会污染长期个人状态。
+
+### 目标驱动的自主调研
+
+Skill 不规定固定搜索引擎、固定网站顺序或固定搜索次数。模型可以根据当前线索自主使用搜索、浏览、页面访问和文件下载能力，在一个入口失败后寻找新的合理路径。
+
+导师主页只是定位线索，不是调研终点。工作流会继续核对学校或学院资料、论文列表、作者页面、出版页面、机构仓储、作者版本和其他可靠全文来源。
+
+### 代表性论文优先
+
+论文选择首先服务于理解导师的研究主线，而不是简单寻找最容易下载或最贴合简历关键词的论文。通常选择一篇体现核心研究方向的论文，再选择一篇体现研究阶段变化、当前重点或真实学生连接的论文。
+
+### 论文事实有明确边界
+
+只有实际下载并读取本地 PDF 的论文，才能在报告和自荐信中称为“阅读”或“精读”。摘要、搜索片段和论文元数据不能被包装成全文阅读，也不能据此编造实验细节、方法机制或结果。
+
+### 保留用户底稿
+
+上传模板或满意稿时，Skill 以完整 DOCX 为基础，保留版式、段落结构和语气偏好，同时以简历和用户最新确认内容为事实准绳，审查并修改底稿中的旧导师、旧论文、旧成绩和其他不匹配内容。
+
+## 工作流程
+
+```text
+初始化简历与可选底稿
+        ↓
+指定学校、学院、导师和可选主页
+        ↓
+导师身份与研究路径调研
+        ↓
+代表性论文选择
+        ↓
+论文全文搜索、下载与验证
+        ↓
+本地 PDF 论文精读
+        ↓
+完整底稿适配与自荐信改写
+        ↓
+生成目标 DOCX 与基础 QA
+```
+
+如果某个网页或下载入口失败，工作流会继续寻找其他合理入口。只有确实无法获得并读取足够的代表性论文全文时，才停止论文特定写作，不用摘要或标题伪造精读内容。
+
+## 如何安装
+
+将本仓库中的两个 Skill 目录复制到 Codex Skills 目录：
+
+```text
+postgrad-recommendation-letter-init/
+postgrad-recommendation-letter-run/
+```
+
+在 Codex 中可通过 `$postgrad-recommendation-letter-init` 和 `$postgrad-recommendation-letter-run` 调用。具体安装方式以当前 Codex 的 Skills 目录配置为准。
+
+## 如何启动
+
+### 第一步：初始化
+
+首次使用时调用：
+
+```text
+使用 $postgrad-recommendation-letter-init 初始化我的简历资料，并设置可选的自荐信模板。
+```
+
+然后上传个人简历。简历是必需的；自荐信模板可以选择上传，也可以直接使用默认模板。
+
+### 第二步：执行目标导师任务
+
+初始化完成后调用：
+
+```text
+使用 $postgrad-recommendation-letter-run，调研【学校】【学院】的【导师】老师；官网主页：【可选 URL】。完成完整流程并输出 DOCX。
+```
+
+例如：
+
+```text
+使用 $postgrad-recommendation-letter-run，调研上海大学机自学院的吴璠老师。完成导师调研、代表性论文精读、自荐信改写并输出 DOCX。
+```
+
+官网主页不是必需项。提供主页可以帮助模型确认导师身份，但即使提供主页，仍会继续进行多源调研。
+
+### 可选执行方式
+
+也可以指定：
+
+```text
+只做导师调研
+只读论文/准备面试
+只改写正文
+```
+
+首稿生成后，用户可以在 Word 中自行微调。若希望将修改后的满意稿作为后续任务底稿，再次调用初始化 Skill 并提供该 DOCX，说明“以后沿用这版”。
+
+## 当前适配范围
+
+- 当前仅在 **Codex** 中完成测试；
+- 设计目标是适配 Codex 以及 GPT 系列模型；
+- 实际搜索、浏览、文件读取、PDF 解析和 DOCX 能力取决于运行环境提供的工具；
+- 未在其他 Agent 平台、模型或工作流框架中完成等价验证。
+
+因此，在其他平台使用时，可能需要根据该平台的 Skill、工具调用和文件处理机制调整调用方式。
+
+## 仓库内容
+
+本仓库只包含可复用的 Skill 和默认 DOCX 模板，不包含任何个人简历、个人自荐信、导师论文、导师调研报告、任务缓存或 profile 状态。
