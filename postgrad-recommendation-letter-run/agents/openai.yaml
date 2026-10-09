@@ -1,6 +1,6 @@
 interface:
   display_name: "保研自荐信执行"
   short_description: "执行导师调研与自荐信工作流"
-  default_prompt: "使用 $postgrad-recommendation-letter-run，调研目标学校与导师，获取并精读代表性论文，改写自荐信并完成 DOCX QA。"
+  default_prompt: "使用 $postgrad-recommendation-letter-run，调研目标学校与导师，建立代表性论文候选账本，获取并精读可核验全文，基于完整底稿改写自荐信并完成结构与事实 QA。"
 policy:
   allow_implicit_invocation: false
